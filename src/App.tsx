@@ -1,22 +1,49 @@
 import './App.css'
-import CurveChart, {InputData} from "./CurveChart";
+import {InputData} from "./Data.tsx";
+import {useState} from "react";
+import {CanvasComponent} from "./Charts/ChartBase.tsx";
+import {ChartWindowManipulator} from "./Charts/ChartViewManipulator.tsx";
+
+function GenerateInitialRandomArr(size: number) {
+    return Array.from({length: size}, (v, i) => ((Math.sin(i / 3) + 1) / 2) * 0.95 + Math.random() / 20);
+}
+
+function GenerateRandomSegment() {
+    const start = Math.floor(Math.random() * 20);
+    const end = Math.floor(Math.random() * 20);
+    return {start: Math.min(start, end), end: Math.max(start, end)};
+}
+
+function GenerateRandomTestData(tick: number,) {
+    const arrSize = 20;
+    const testData: InputData = {
+        values: Array.from({ length: 10 }, () => GenerateInitialRandomArr(arrSize)),
+        segments: Array.from({ length: 10 }, () => GenerateRandomSegment()),
+    };
+    for (let i = 0; i < testData.values.length; i++) {
+        for (let j = 0; j < testData.values[i].length; j++) {
+            testData.values[i][j] += (tick % 100) / 10;
+        }
+    }
+    return testData;
+}
 
 const App = () => {
-    const testData: InputData = {
-        values: [
-            [1, 2, 3, 4, 5, 6, 7, 8, 9], // First dataset
-            [2, 4, 6, 8, 1, 6, 3, 2, 5], // Second dataset
-        ],
-        segments: [
-            {start: 1, end: 3},
-            {start: 2, end: 6},
-            {start: 7, end: 8},
-        ],
-    };
-
+    const [tick, setTick] = useState(0);
+    const [testData, setTestData] = useState(GenerateRandomTestData(tick));
+    // useEffect(() => {
+    //     const interval = setInterval(() => {
+    //         setTick(tick + 1);
+    //         setTestData(GenerateRandomTestData(tick));
+    //     }, 50);
+    //     return () => {
+    //         clearInterval(interval);
+    //     };
+    // }, [tick]);
     return (
         <div>
-            <CurveChart data={testData}/>
+            <ChartWindowManipulator/>
+            <CanvasComponent data={testData} width={1000} height={1000}/>
         </div>
     );
 };
