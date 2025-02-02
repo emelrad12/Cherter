@@ -6,6 +6,7 @@ import {VerticalDashedLines} from "./VerticalDashedLines.tsx";
 import {useAtom, useSetAtom} from "jotai/index";
 import {SegmentShadow} from "./CurrentlySelectedSegment.tsx";
 import {useAtomValue} from "jotai";
+import {AnimateTo} from "./ChartViewManipulator.tsx";
 
 interface CanvasComponentProps {
     data: InputData
@@ -14,7 +15,7 @@ interface CanvasComponentProps {
 }
 
 export const CanvasComponent = ({data, width, height}: CanvasComponentProps) => {
-    const [chartWindow] = useAtom(CurrentChartWindow);
+    const [chartWindow, setChartWindow] = useAtom(CurrentChartWindow);
     const {start, length} = chartWindow;
     const setMousePosition = useSetAtom(CurrentNumberMousePosition);
     const mousePosition = useAtomValue(CurrentNumberMousePosition);
@@ -39,13 +40,38 @@ export const CanvasComponent = ({data, width, height}: CanvasComponentProps) => 
 
     const dashedLines = data.segments.map(segment => [segment.start, segment.end]).flat();
     dashedLines.push(mousePosition);
+
+    const charts = [];
+    let currentOffset = 0;
+    const HEIGHT_MULTIPLIER = 0.1;
+
+    for (let i = 0; i < data.values.length; i++) {
+        const chartHeight = i === 0 ? height * HEIGHT_MULTIPLIER * 2 : height * HEIGHT_MULTIPLIER;
+
+        charts.push(
+            <LineChart
+                key={i}
+                data={data.values[i]}
+                width={width}
+                height={chartHeight}
+                offset={currentOffset}
+            />
+        );
+
+        currentOffset += chartHeight;
+    }
+
+    const currenlySelectedSegment = data.segments.find(segment => {
+        return segment.start <= mousePosition && segment.end >= mousePosition;
+    });
+
     return (
-        <Stage onMouseMove={handleMouseMove} width={width} height={height}>
-            <LineChart data={data.values[0]} width={width} height={height * 0.4} offset={0}/>
-            <LineChart data={data.values[1]} width={width} height={height * 0.2} offset={height * 0.4}/>
-            <LineChart data={data.values[2]} width={width} height={height * 0.2} offset={height * 0.6}/>
+        <Stage onMouseMove={handleMouseMove} onClick={() => {
+            AnimateTo(chartWindow, {start: currenlySelectedSegment.start, length: currenlySelectedSegment.end - currenlySelectedSegment.start}, setChartWindow);
+        }} width={width} height={height}>
+            {charts}
             <VerticalDashedLines width={width} height={height} lines={dashedLines}/>
-            <SegmentShadow width={width} height={height} segment={{start: 5, end: 10}}/>
+            <SegmentShadow width={width} height={height} segment={currenlySelectedSegment}/>
         </Stage>
     );
 };

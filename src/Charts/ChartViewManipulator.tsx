@@ -2,6 +2,26 @@ import React, {useRef} from 'react';
 import {useAtom} from 'jotai';
 import {CurrentChartWindow, EnableDataRandomization} from "../Data.tsx";
 
+const Lerp = (start: number, end: number, t: number) => {
+    return start + (end - start) * t;
+}
+
+export function AnimateTo(current, desired, setChartWindow){
+        let currentTick = 0;
+        const totalTicks = 25;
+        const animate = () => {
+            currentTick++;
+            setChartWindow({
+                start: Lerp(current.start, desired.start, currentTick / totalTicks),
+                length: Lerp(current.length, desired.length, currentTick / totalTicks),
+            });
+            if (currentTick < totalTicks) {
+                requestAnimationFrame(animate);
+            }
+        };
+        requestAnimationFrame(animate);
+}
+
 export const ChartWindowManipulator = () => {
     const [chartWindow, setChartWindow] = useAtom(CurrentChartWindow);
     const [enableRandomization, setEnableRandomization] = useAtom(EnableDataRandomization);
@@ -28,28 +48,13 @@ export const ChartWindowManipulator = () => {
         requestAnimationFrame(animate);
     };
 
-    const Lerp = (start: number, end: number, t: number) => {
-        return start + (end - start) * t;
-    }
 
     const AnimateToRandomPosition = () => {
         const randomLength = Math.random() * 20;
         let randomStart = Math.random() * 20;
         randomStart = Math.min(randomStart, 20 - randomLength);
         const current = chartWindow
-        let currentTick = 0;
-        const totalTicks = 25;
-        const animate = () => {
-            currentTick++;
-            setChartWindow({
-                start: Lerp(current.start, randomStart, currentTick / totalTicks),
-                length: Lerp(current.length, randomLength, currentTick / totalTicks),
-            });
-            if (currentTick < totalTicks) {
-                requestAnimationFrame(animate);
-            }
-        };
-        requestAnimationFrame(animate);
+        AnimateTo(current, {start: randomStart, length: randomLength}, setChartWindow);
     }
 
     const ToggleDataRandomization = () => {

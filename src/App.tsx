@@ -18,7 +18,7 @@ function GenerateRandomSegment() {
 function GenerateRandomTestData(tick: number) {
     const arrSize = 20;
     const testData: InputData = {
-        values: Array.from({length: 10}, () => GenerateInitialRandomArr(arrSize, tick / 10)),
+        values: Array.from({length: 10}, (v, i) => GenerateInitialRandomArr(arrSize, tick / 10 + Math.random() * 10)),
         segments: Array.from({length: 10}, () => GenerateRandomSegment()),
     };
     return testData;
