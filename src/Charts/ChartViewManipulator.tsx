@@ -1,9 +1,10 @@
 import React, {useRef} from 'react';
 import {useAtom} from 'jotai';
-import {CurrentChartWindow} from "../Data.tsx";
+import {CurrentChartWindow, EnableDataRandomization} from "../Data.tsx";
 
 export const ChartWindowManipulator = () => {
     const [chartWindow, setChartWindow] = useAtom(CurrentChartWindow);
+    const [enableRandomization, setEnableRandomization] = useAtom(EnableDataRandomization);
     const handleStartChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         const newStart = Number(e.target.value);
         setChartWindow({...chartWindow, start: newStart});
@@ -51,6 +52,10 @@ export const ChartWindowManipulator = () => {
         requestAnimationFrame(animate);
     }
 
+    const ToggleDataRandomization = () => {
+        setEnableRandomization(!enableRandomization);
+    }
+
     return (
         <div>
             <div>
@@ -75,6 +80,7 @@ export const ChartWindowManipulator = () => {
             </div>
             <button onClick={StartAuto}>Auto</button>
             <button onClick={AnimateToRandomPosition}>Animate to random position</button>
+            <button onClick={ToggleDataRandomization}>Toggle data randomization</button>
         </div>
     );
 };

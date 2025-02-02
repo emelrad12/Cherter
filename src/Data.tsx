@@ -18,3 +18,4 @@ export interface ChartWindow {
 }
 
 export const CurrentChartWindow = atom<ChartWindow>({start: 0, length: 20});
+export const EnableDataRandomization = atom<boolean>(false);

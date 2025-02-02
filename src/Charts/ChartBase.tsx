@@ -5,6 +5,7 @@ import {LineChart} from "./LineChart.tsx";
 import {VerticalDashedLines} from "./VerticalDashedLines.tsx";
 import {useAtom, useSetAtom} from "jotai/index";
 import {SegmentShadow} from "./CurrentlySelectedSegment.tsx";
+import {useAtomValue} from "jotai";
 
 interface CanvasComponentProps {
     data: InputData
@@ -16,6 +17,7 @@ export const CanvasComponent = ({data, width, height}: CanvasComponentProps) => 
     const [chartWindow] = useAtom(CurrentChartWindow);
     const {start, length} = chartWindow;
     const setMousePosition = useSetAtom(CurrentNumberMousePosition);
+    const mousePosition = useAtomValue(CurrentNumberMousePosition);
     const getChartX = (x: number): number => {
         return start + (x / width) * length;
     };
@@ -35,13 +37,14 @@ export const CanvasComponent = ({data, width, height}: CanvasComponentProps) => 
         }
     };
 
-
+    const dashedLines = data.segments.map(segment => [segment.start, segment.end]).flat();
+    dashedLines.push(mousePosition);
     return (
         <Stage onMouseMove={handleMouseMove} width={width} height={height}>
             <LineChart data={data.values[0]} width={width} height={height * 0.4} offset={0}/>
-            <LineChart data={data.values[1]} width={width} height={height * 0.2} offset={height*0.4}/>
-            <LineChart data={data.values[2]} width={width} height={height * 0.2} offset={height*0.6}/>
-            <VerticalDashedLines width={width} height={height} lines={data.segments.map(segment => [segment.start, segment.end]).flat()}/>
+            <LineChart data={data.values[1]} width={width} height={height * 0.2} offset={height * 0.4}/>
+            <LineChart data={data.values[2]} width={width} height={height * 0.2} offset={height * 0.6}/>
+            <VerticalDashedLines width={width} height={height} lines={dashedLines}/>
             <SegmentShadow width={width} height={height} segment={{start: 5, end: 10}}/>
         </Stage>
     );

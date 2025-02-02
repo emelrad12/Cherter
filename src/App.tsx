@@ -1,11 +1,12 @@
 import './App.css'
-import {InputData} from "./Data.tsx";
-import {useState} from "react";
+import {EnableDataRandomization, InputData} from "./Data.tsx";
+import {useEffect, useState} from "react";
 import {CanvasComponent} from "./Charts/ChartBase.tsx";
 import {ChartWindowManipulator} from "./Charts/ChartViewManipulator.tsx";
+import {useAtomValue} from "jotai";
 
-function GenerateInitialRandomArr(size: number) {
-    return Array.from({length: size}, (v, i) => ((Math.sin(i / 3) + 1) / 2) * 0.95 + Math.random() / 20);
+function GenerateInitialRandomArr(size: number, sinOffset: number) {
+    return Array.from({length: size}, (v, i) => ((Math.sin((i + sinOffset) / 3) + 1) / 2) * 0.90 + Math.random() / 10);
 }
 
 function GenerateRandomSegment() {
@@ -14,32 +15,29 @@ function GenerateRandomSegment() {
     return {start: Math.min(start, end), end: Math.max(start, end)};
 }
 
-function GenerateRandomTestData(tick: number,) {
+function GenerateRandomTestData(tick: number) {
     const arrSize = 20;
     const testData: InputData = {
-        values: Array.from({ length: 10 }, () => GenerateInitialRandomArr(arrSize)),
-        segments: Array.from({ length: 10 }, () => GenerateRandomSegment()),
+        values: Array.from({length: 10}, () => GenerateInitialRandomArr(arrSize, tick / 10)),
+        segments: Array.from({length: 10}, () => GenerateRandomSegment()),
     };
-    for (let i = 0; i < testData.values.length; i++) {
-        for (let j = 0; j < testData.values[i].length; j++) {
-            testData.values[i][j] += (tick % 100) / 10;
-        }
-    }
     return testData;
 }
 
 const App = () => {
     const [tick, setTick] = useState(0);
     const [testData, setTestData] = useState(GenerateRandomTestData(tick));
-    // useEffect(() => {
-    //     const interval = setInterval(() => {
-    //         setTick(tick + 1);
-    //         setTestData(GenerateRandomTestData(tick));
-    //     }, 50);
-    //     return () => {
-    //         clearInterval(interval);
-    //     };
-    // }, [tick]);
+    const enableRandomization = useAtomValue(EnableDataRandomization);
+    useEffect(() => {
+        const interval = setInterval(() => {
+            if (!enableRandomization) return;
+            setTick(tick + 1);
+            setTestData(GenerateRandomTestData(tick));
+        }, 50);
+        return () => {
+            clearInterval(interval);
+        };
+    }, [enableRandomization, tick]);
     return (
         <div>
             <ChartWindowManipulator/>
